@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Для Влады — секретный квест</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Arial,Helvetica,sans-serif;background:#09070d;color:#fff}
+body{overflow-x:hidden}
+.bg{position:fixed;inset:0;z-index:-2;background:radial-gradient(circle at 20% 20%,#35152f 0,transparent 35%),radial-gradient(circle at 80% 30%,#172b49 0,transparent 35%),linear-gradient(135deg,#09070d,#130b18 55%,#070910)}
+.glow{position:fixed;width:300px;height:300px;border-radius:50%;filter:blur(90px);opacity:.35;z-index:-1;background:#d44d91;left:-100px;top:20%}
+.glow2{position:fixed;width:300px;height:300px;border-radius:50%;filter:blur(100px);opacity:.25;background:#507be8;right:-120px;bottom:10%}
+.wrap{width:min(760px,92%);margin:auto;padding:45px 0 70px}
+.card{background:rgba(20,16,27,.82);border:1px solid rgba(255,255,255,.12);border-radius:30px;padding:38px;box-shadow:0 25px 80px rgba(0,0,0,.45);backdrop-filter:blur(16px)}
+.center{text-align:center}.eyebrow{font-size:12px;letter-spacing:4px;text-transform:uppercase;color:#d9a6c5;margin-bottom:18px}
+h1{font-size:clamp(42px,10vw,76px);line-height:.95;margin:0 0 20px;font-weight:700}
+h2{font-size:30px;line-height:1.15;margin:10px 0 22px}
+p{font-size:17px;line-height:1.7;color:#cfc8d5}
+.small{font-size:13px;color:#8f8797}
+.btn{border:0;border-radius:999px;padding:15px 28px;background:linear-gradient(135deg,#f08ab9,#9c72e8);color:#fff;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 10px 30px rgba(190,90,170,.25);transition:.2s}
+.btn:hover{transform:translateY(-2px);filter:brightness(1.08)}
+.option{width:100%;display:block;text-align:left;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.11);color:#fff;border-radius:17px;padding:17px 18px;margin:11px 0;font-size:15px;cursor:pointer;transition:.2s}
+.option:hover{background:rgba(255,255,255,.1);border-color:rgba(240,138,185,.55);transform:translateX(3px)}
+.option.correct{border-color:#71d6a2;background:rgba(72,180,125,.15)}
+.option.wrong{border-color:#e57991;background:rgba(220,75,100,.12)}
+.progress{height:5px;background:rgba(255,255,255,.1);border-radius:10px;overflow:hidden;margin-bottom:25px}
+.progress span{display:block;height:100%;background:linear-gradient(90deg,#f08ab9,#9c72e8);transition:.35s}
+.top{display:flex;justify-content:space-between;color:#9d95a5;font-size:12px;letter-spacing:1px;margin-bottom:10px}
+.hidden{display:none!important}
+.final{position:relative;overflow:hidden;text-align:center;padding:50px 30px}
+.ticket{margin:30px auto 25px;max-width:500px;padding:28px;border:1px solid rgba(255,255,255,.2);border-radius:24px;background:linear-gradient(135deg,rgba(240,138,185,.13),rgba(100,120,230,.1));position:relative}
+.ticket:before,.ticket:after{content:"";position:absolute;width:24px;height:24px;background:#09070d;border-radius:50%;top:50%;transform:translateY(-50%)}
+.ticket:before{left:-13px}.ticket:after{right:-13px}
+.ticket .label{font-size:11px;letter-spacing:3px;color:#d9a6c5}
+.ticket h3{font-size:34px;margin:12px 0 8px}
+.ticket strong{font-size:20px}
+.heart{font-size:40px;animation:pulse 1.5s infinite}
+@keyframes pulse{50%{transform:scale(1.08)}}
+.note{margin-top:22px;padding:14px 16px;border-radius:15px;background:rgba(255,255,255,.05);font-size:14px;color:#aaa2b0}
+@media(max-width:600px){.wrap{padding:25px 0 45px}.card{padding:25px 20px;border-radius:24px}h1{font-size:50px}h2{font-size:25px}}
+</style>
+</head>
+<body>
+<div class="bg"></div><div class="glow"></div><div class="glow2"></div>
+<main class="wrap">
+
+<section id="start" class="card center">
+<div class="eyebrow">секретный квест</div>
+<h1>Для Влады</h1>
+<p>Я приготовил для тебя кое-что особенное.<br>Но подарок просто так не получить.</p>
+<p class="small">10 вопросов · один секрет · финал, который всё объяснит</p>
+<button class="btn" onclick="startQuest()">Начать квест</button>
+</section>
+
+<section id="game" class="card hidden">
+<div class="top"><span id="step">ШАГ 1 / 10</span><span id="percent">10%</span></div>
+<div class="progress"><span id="bar" style="width:10%"></span></div>
+<h2 id="question"></h2>
+<div id="answers"></div>
+<div id="feedback" class="note hidden"></div>
+</section>
+
+<section id="final" class="card final hidden">
+<div class="eyebrow">секрет раскрыт</div>
+<div class="heart">♥</div>
+<h2>Влада, это для тебя</h2>
+<div class="ticket">
+<div class="label">ТВОЙ ПОДАРОК</div>
+<h3>Валерий Меладзе</h3>
+<strong>Два билета на концерт</strong>
+</div>
+<p>И самое главное — я хочу прожить этот вечер вместе с тобой.</p>
+<p class="heart">♥</p>
+<p class="small">Квест завершён · наше приключение только начинается</p>
+</section>
+
+</main>
+
+<script>
+const questions=[
+["Что, по-твоему, делает обычный день особенным?",["Красивый закат","Любимый человек рядом","Вкусный ужин","Выходной"],1],
+["Я могу быть маленьким, но способен подарить огромные эмоции. Меня нельзя потрогать, но можно почувствовать. Что это?",["Подарок","Впечатление","Случайность","Секрет"],1],
+["Если выбирать подарок, что останется в памяти дольше всего?",["Вещь","Деньги","Воспоминание, которое останется надолго","Упаковка"],2],
+["Что становится лучше, когда переживаешь это вместе с любимым человеком?",["Путешествие","Праздник","Вечер","Всё перечисленное"],3],
+["Что нельзя положить в коробку, но можно сохранить на всю жизнь?",["Фото","Впечатление","Открытку","Сувенир"],1],
+["Когда эмоции обычно становятся особенно сильными?",["Когда вокруг много людей","Когда звучит музыка","Когда происходит что-то неожиданное","Во всех трёх случаях"],3],
+["Представь: красивое место, люди, приглушённый свет. Все собрались ради одного особенного момента. Что это?",["Обычная встреча","Событие","Поход в магазин","Рабочий день"],1],
+["Что может превратить обычный вечер в тот, который потом вспоминаешь годами?",["Атмосфера","Музыка","Любимый человек рядом","Всё вместе"],3],
+["Что нельзя подарить в коробке, но можно пережить вдвоём?",["Впечатление","Плед","Книгу","Фоторамку"],0],
+["Что, по-твоему, ждёт тебя после этого квеста?",["Обычный вечер","Особенный вечер для нас двоих","Ещё один вопрос","Ничего"],1]
+];
+let i=0,locked=false;
+function startQuest(){document.getElementById("start").classList.add("hidden");document.getElementById("game").classList.remove("hidden");render()}
+function render(){
+ locked=false;
+ const q=questions[i];
+ document.getElementById("step").textContent="ШАГ "+(i+1)+" / "+questions.length;
+ document.getElementById("percent").textContent=Math.round((i+1)/questions.length*100)+"%";
+ document.getElementById("bar").style.width=((i+1)/questions.length*100)+"%";
+ document.getElementById("question").textContent=q[0];
+ const box=document.getElementById("answers");box.innerHTML="";
+ const f=document.getElementById("feedback");f.classList.add("hidden");f.textContent="";
+ q[1].forEach((a,n)=>{
+  const b=document.createElement("button");b.className="option";b.textContent=a;
+  b.onclick=()=>answer(n,b);box.appendChild(b);
+ });
+}
+function answer(n,btn){
+ if(locked)return;locked=true;
+ const q=questions[i], buttons=[...document.querySelectorAll(".option")];
+ if(n===q[2]){
+  btn.classList.add("correct");
+  document.getElementById("feedback").textContent=i===questions.length-1?"Именно так. Пора узнать, что тебя ждёт…":"Верно ❤️";
+  document.getElementById("feedback").classList.remove("hidden");
+  setTimeout(()=>{i++;i<questions.length?render():finish()},850);
+ }else{
+  btn.classList.add("wrong");
+  document.getElementById("feedback").textContent="Почти… Попробуй ещё раз 😉";
+  document.getElementById("feedback").classList.remove("hidden");
+  setTimeout(()=>{btn.classList.remove("wrong");locked=false},500);
+ }
+}
+function finish(){document.getElementById("game").classList.add("hidden");document.getElementById("final").classList.remove("hidden");}
+</script>
+</body>
+</html>
